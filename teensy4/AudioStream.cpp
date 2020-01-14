@@ -52,11 +52,11 @@ void software_isr(void);
 
 // Set up the pool of audio data blocks
 // placing them all onto the free list
-FLASHMEM void AudioStream::initialize_memory(audio_block_t *data, unsigned int num)
+FLASHMEM void AudioStream::initialize_memory(audio_block_t *data, unsigned int num, data_type type = data_type::INT16)
 {
 	unsigned int i;
 	unsigned int maxnum = MAX_AUDIO_MEMORY / AUDIO_BLOCK_SAMPLES / 2;
-
+	if (type == data_type::INT32 || type == data_type::FLOAT) maxnum /= 2;
 	//Serial.println("AudioStream initialize_memory");
 	//delay(10);
 	if (num > maxnum) num = maxnum;
@@ -71,6 +71,7 @@ FLASHMEM void AudioStream::initialize_memory(audio_block_t *data, unsigned int n
 	}
 	for (i=0; i < num; i++) {
 		data[i].memory_pool_index = i;
+		data[i].data_type_tag = type;
 	}
 	__enable_irq();
 
@@ -183,7 +184,21 @@ audio_block_t * AudioStream::receiveWritable(unsigned int index)
 	inputQueue[index] = NULL;
 	if (in && in->ref_count > 1) {
 		p = allocate();
-		if (p) memcpy(p->data, in->data, sizeof(p->data));
+		if (p) {
+			switch (p->data_type_tag) {
+			case data_type::INT16:
+				memcpy(p->data, in->data, sizeof(p->data));
+				break;			
+			case data_type::INT32:
+				memcpy(p->data_int32, in->data_int32, sizeof(p->data_int32));
+				break;
+			case data_type::FLOAT:
+				memcpy(p->data_float, in->data_float, sizeof(p->data_float));
+				break;
+			default:
+				break;
+			}
+		}
 		in->ref_count--;
 		in = p;
 	}

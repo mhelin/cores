@@ -61,13 +61,21 @@
 class AudioStream;
 class AudioConnection;
 
+typedef enum {
+	INT16, INT32, FLOAT
+} data_type;
+
 typedef struct audio_block_struct {
 	uint8_t  ref_count;
-	uint8_t  reserved1;
+	uint8_t  reserved1:6;
+	uint8_t  data_type_tag:2;
 	uint16_t memory_pool_index;
-	int16_t  data[AUDIO_BLOCK_SAMPLES];
+	union {
+		int16_t data[AUDIO_BLOCK_SAMPLES];
+		int32_t data_int32[AUDIO_BLOCK_SAMPLES];
+		float   data_float[AUDIO_BLOCK_SAMPLES];
+	};
 } audio_block_t;
-
 
 class AudioConnection
 {
@@ -102,7 +110,12 @@ protected:
 
 #define AudioMemory(num) ({ \
 	static DMAMEM audio_block_t data[num]; \
-	AudioStream::initialize_memory(data, num); \
+	AudioStream::initialize_memory(data, num, data_type::INT16); \
+})
+
+#define AudioMemory(num, type) ({ \
+	static DMAMEM audio_block_t data[num]; \
+	AudioStream::initialize_memory(data, num, type); \
 })
 
 #define CYCLE_COUNTER_APPROX_PERCENT(n) (((n) + (F_CPU_ACTUAL / 32 / AUDIO_SAMPLE_RATE * AUDIO_BLOCK_SAMPLES / 100)) / (F_CPU_ACTUAL / 16 / AUDIO_SAMPLE_RATE * AUDIO_BLOCK_SAMPLES / 100))
@@ -138,7 +151,7 @@ public:
 			cpu_cycles_max = 0;
 			numConnections = 0;
 		}
-	static void initialize_memory(audio_block_t *data, unsigned int num);
+	static void initialize_memory(audio_block_t *data, unsigned int num, data_type type);
 	int processorUsage(void) { return CYCLE_COUNTER_APPROX_PERCENT(cpu_cycles); }
 	int processorUsageMax(void) { return CYCLE_COUNTER_APPROX_PERCENT(cpu_cycles_max); }
 	void processorUsageMaxReset(void) { cpu_cycles_max = cpu_cycles; }
