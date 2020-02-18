@@ -94,8 +94,10 @@ static uint8_t device_descriptor[] = {
   // For USB types that don't explicitly define BCD_DEVICE,
   // use the minor version number to help teensy_ports
   // identify which Teensy model is used.
-  #if defined(__IMXRT1062__)
+  #if defined(__IMXRT1062__) && defined(ARDUINO_TEENSY40)
         0x79, 0x02, // Teensy 4.0
+  #elif defined(__IMXRT1062__) && defined(ARDUINO_TEENSY41)
+        0x80, 0x02, // Teensy 4.1
   #else
         0x00, 0x02,
   #endif
@@ -621,7 +623,7 @@ PROGMEM const uint8_t usb_config_descriptor_480[CONFIG_DESC_SIZE] = {
         0x02,                                   // bFunctionClass
         0x02,                                   // bFunctionSubClass
         0x01,                                   // bFunctionProtocol
-        4,                                      // iFunction
+        0,                                      // iFunction
 #endif
 
 #ifdef CDC_DATA_INTERFACE
@@ -1128,7 +1130,7 @@ PROGMEM const uint8_t usb_config_descriptor_480[CONFIG_DESC_SIZE] = {
         0x06,                                   // bInterfaceClass (0x06 = still image)
         0x01,                                   // bInterfaceSubClass
         0x01,                                   // bInterfaceProtocol
-        4,                                      // iInterface
+        0,                                      // iInterface
         // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
         7,                                      // bLength
         5,                                      // bDescriptorType
@@ -1455,7 +1457,7 @@ PROGMEM const uint8_t usb_config_descriptor_12[CONFIG_DESC_SIZE] = {
         0x02,                                   // bFunctionClass
         0x02,                                   // bFunctionSubClass
         0x01,                                   // bFunctionProtocol
-        4,                                      // iFunction
+        0,                                      // iFunction
 #endif
 
 #ifdef CDC_DATA_INTERFACE
@@ -1962,7 +1964,7 @@ PROGMEM const uint8_t usb_config_descriptor_12[CONFIG_DESC_SIZE] = {
         0x06,                                   // bInterfaceClass (0x06 = still image)
         0x01,                                   // bInterfaceSubClass
         0x01,                                   // bInterfaceProtocol
-        4,                                      // iInterface
+        0,                                      // iInterface
         // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
         7,                                      // bLength
         5,                                      // bDescriptorType
